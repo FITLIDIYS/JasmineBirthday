@@ -93,60 +93,50 @@
         }
 
         function createHeartShape() {
-        const centerX = window.innerWidth / 2;
-        const centerY = window.innerHeight / 2 - 50;
-        const scaleFactor = window.innerWidth < 600 ? 14 : 20;
-        
-        let usedPositions = new Set();
-        let minDistance = 10; // Jarak minimal antar titik
+            const centerX = window.innerWidth / 2;
+            const centerY = window.innerHeight / 2 - 50;
+            const scaleFactor = window.innerWidth < 600 ? 10 : 18;
 
-        function isTooClose(x, y) {
-            for (let pos of usedPositions) {
-                let [px, py] = pos.split(',').map(Number);
-                if (Math.hypot(px - x, py - y) < minDistance) {
-                    return true;
+            let usedPositions = new Set();
+            let minDistance = 10;
+
+            dots.forEach((dot, i) => {
+                let x, y, posX, posY;
+                let maxAttempts = 20, attempt = 0;
+
+                do {
+                    let t = Math.random() * Math.PI * 2;
+                    let r = Math.sqrt(Math.random()) * 16;
+
+                    x = 16 * Math.pow(Math.sin(t), 3) * (r / 16);
+                    y = -(13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t)) * (r / 16);
+
+                    posX = Math.round(centerX + x * scaleFactor);
+                    posY = Math.round(centerY + y * scaleFactor);
+
+                    attempt++;
+                } while (attempt < maxAttempts);
+
+                usedPositions.add([posX, posY]);
+
+                setTimeout(() => {
+                    dot.style.left = `${posX}px`;
+                    dot.style.top = `${posY}px`;
+                }, Math.random() * 500);
+
+                if (Math.random() < 0.3) {
+                    dot.classList.add("beating");
                 }
-            }
-            return false;
+
+                if (Math.random() < 0.5) {
+                    let dx = (Math.random() - 0.5) * 8;
+                    let dy = (Math.random() - 0.5) * 8;
+                    dot.style.setProperty('--dx', `${dx}px`);
+                    dot.style.setProperty('--dy', `${dy}px`);
+                    dot.classList.add("moving");
+                }
+            });
         }
-
-        dots.forEach((dot, i) => {
-            let x, y, posX, posY;
-            let maxAttempts = 20, attempt = 0;
-
-            do {
-                let t = Math.random() * Math.PI * 2;
-                let r = Math.random() * 16; // Distribusi lebih merata
-
-                x = 16 * Math.pow(Math.sin(t), 3) * (r / 16);
-                y = -(13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t)) * (r / 16);
-
-                posX = Math.round(centerX + x * scaleFactor);
-                posY = Math.round(centerY + y * scaleFactor);
-
-                attempt++;
-            } while (isTooClose(posX, posY) && attempt < maxAttempts);
-
-            usedPositions.add(`${posX},${posY}`);
-
-            setTimeout(() => {
-                dot.style.left = `${posX}px`;
-                dot.style.top = `${posY}px`;
-            }, Math.random() * 500);
-
-            if (Math.random() < 0.3) {
-                dot.classList.add("beating");
-            }
-
-            if (Math.random() < 0.5) {
-                let dx = (Math.random() - 0.5) * 8;
-                let dy = (Math.random() - 0.5) * 8;
-                dot.style.setProperty('--dx', `${dx}px`);
-                dot.style.setProperty('--dy', `${dy}px`);
-                dot.classList.add("moving");
-            }
-        });
-    }
 
         function createTextShape() {
             const canvas = document.getElementById('textCanvas');
@@ -193,6 +183,7 @@
             for (let i = usedDots; i < dots.length; i++) {
                 let dot = dots[i];
                 dot.style.backgroundColor = "whitesmoke";
+                dot.style.transition = "background-color 0.5s ease-in-out";
             }
         }
 
