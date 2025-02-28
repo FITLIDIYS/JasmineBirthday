@@ -42,18 +42,18 @@
         /* Warning Text Style */
         .warning-text {
             position: absolute;
-            top: 50%;
+            top: 10%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background: rgba(255, 0, 0, 0.8);
             color: white;
-            padding: 15px 20px;
-            border-radius: 10px;
+            padding: 8px 15px;
+            border-radius: 6px;
             font-family: Arial, sans-serif;
-            font-size: 18px;
+            font-size: 14px;
             display: none;
             opacity: 0;
             transition: opacity 0.5s ease-in-out;
+            z-index: 1000;
         }
     </style>
 </head>
@@ -187,16 +187,34 @@
         }
 
         function showWarning() {
-            warning.style.display = "block";
-            warning.style.opacity = "1";
+            for (let i = 0; i < 10; i++) { // Spam 10 warning messages
+                let spamWarning = document.createElement("div");
+                spamWarning.classList.add("warning-text");
+                spamWarning.innerText = "Wahh kamu spam hatinya, sekarang tanggung jawab untuk sama-sama terus sama aku :)";
+                
+                // Set posisi acak di layar
+                let randomX = Math.random() * window.innerWidth;
+                let randomY = Math.random() * window.innerHeight;
 
-            setTimeout(() => {
-                warning.style.opacity = "0";
+                spamWarning.style.left = `${randomX}px`;
+                spamWarning.style.top = `${randomY}px`;
+                spamWarning.style.transform = "translate(-50%, -50%)";
+                spamWarning.style.opacity = "1";
+                spamWarning.style.position = "absolute";
+                spamWarning.style.display = "block";
+
+                document.body.appendChild(spamWarning);
+
+                // Hapus warning setelah beberapa detik
                 setTimeout(() => {
-                    warning.style.display = "none";
-                }, 500);
-            }, 3000);
+                    spamWarning.style.opacity = "0";
+                    setTimeout(() => {
+                        spamWarning.remove();
+                    }, 500);
+                }, 2000);
+            }
         }
+
 
         generateDots();
 
