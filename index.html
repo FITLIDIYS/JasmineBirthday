@@ -57,6 +57,9 @@
     </style>
 </head>
 <body>
+    <!-- Audio untuk autoplay -->
+    <audio id="bg-music" src="catHappy.mp3" loop></audio>
+
     <canvas id="textCanvas" width="500" height="200" style="display:none;"></canvas>
 
     <script>
@@ -64,6 +67,14 @@
         let density = window.innerWidth < 1000 ? 800 : 1200;
         const body = document.body;
         let clickCount = 0;
+        const audio = document.getElementById("bg-music");
+
+        function playMusic() {
+            // Memulai lagu hanya jika belum dimainkan
+            if (audio.paused) {
+                audio.play().catch(error => console.log("Autoplay blocked:", error));
+            }
+        }
 
         function generateDots() {
             for (let i = 0; i < density; i++) {
@@ -79,16 +90,6 @@
                 body.appendChild(dot);
                 dots.push(dot);
             }
-        }
-
-        function isTooClose(x, y, usedPositions, minDistance = 5) {
-            for (let [px, py] of usedPositions) {
-                let dist = Math.sqrt((px - x) ** 2 + (py - y) ** 2);
-                if (dist < minDistance) {
-                    return true;
-                }
-            }
-            return false;
         }
 
         function createHeartShape() {
@@ -113,7 +114,7 @@
                     posY = Math.round(centerY + y * scaleFactor);
 
                     attempt++;
-                } while (isTooClose(posX, posY, usedPositions) && attempt < maxAttempts);
+                } while (attempt < maxAttempts);
 
                 usedPositions.add([posX, posY]);
 
@@ -137,61 +138,58 @@
         }
 
         function createTextShape() {
-        const canvas = document.getElementById('textCanvas');
-        const ctx = canvas.getContext('2d');
+            const canvas = document.getElementById('textCanvas');
+            const ctx = canvas.getContext('2d');
 
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
 
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.font = "bold 80px Arial";
-        ctx.fillStyle = "white";
-        ctx.textAlign = "center";
-        ctx.fillText("HAPPY", canvas.width / 2, canvas.height / 2.8);
-        ctx.fillText("BIRTHDAY", canvas.width / 2, canvas.height / 2.2);
-        ctx.fillText("JASMINE", canvas.width / 2, canvas.height / 1.8);
-        ctx.fillText("CANTIK", canvas.width / 2, canvas.height / 1.5);
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.font = "bold 80px Arial";
+            ctx.fillStyle = "white";
+            ctx.textAlign = "center";
+            ctx.fillText("HAPPY", canvas.width / 2, canvas.height / 2.8);
+            ctx.fillText("BIRTHDAY", canvas.width / 2, canvas.height / 2.2);
+            ctx.fillText("JASMINE", canvas.width / 2, canvas.height / 1.8);
+            ctx.fillText("CANTIK", canvas.width / 2, canvas.height / 1.5);
 
-        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
-        const positions = [];
-        const gap = 8;
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+            const positions = [];
+            const gap = 8;
 
-        for (let y = 0; y < canvas.height; y += gap) {
-            for (let x = 0; x < canvas.width; x += gap) {
-                let index = (y * canvas.width + x) * 4;
-                if (imageData[index] > 100) {
-                    positions.push([x, y]);
+            for (let y = 0; y < canvas.height; y += gap) {
+                for (let x = 0; x < canvas.width; x += gap) {
+                    let index = (y * canvas.width + x) * 4;
+                    if (imageData[index] > 100) {
+                        positions.push([x, y]);
+                    }
                 }
             }
-        }
 
-        let usedDots = Math.min(positions.length, dots.length);
+            let usedDots = Math.min(positions.length, dots.length);
 
-        // Dots yang digunakan untuk teks
-        for (let i = 0; i < usedDots; i++) {
-            let pos = positions[i];
-            let dot = dots[i];
-            if (pos) {
-                setTimeout(() => {
-                    dot.style.left = `${pos[0]}px`;
-                    dot.style.top = `${pos[1]}px`;
-                }, Math.random() * 500);
+            for (let i = 0; i < usedDots; i++) {
+                let pos = positions[i];
+                let dot = dots[i];
+                if (pos) {
+                    setTimeout(() => {
+                        dot.style.left = `${pos[0]}px`;
+                        dot.style.top = `${pos[1]}px`;
+                    }, Math.random() * 500);
+                }
+            }
+
+            for (let i = usedDots; i < dots.length; i++) {
+                let dot = dots[i];
+                dot.style.backgroundColor = "whitesmoke";
+                dot.style.transition = "background-color 0.5s ease-in-out";
             }
         }
-
-        for (let i = usedDots; i < dots.length; i++) {
-            let dot = dots[i];
-            dot.style.backgroundColor = "whitesmoke";
-            dot.style.transition = "background-color 0.5s ease-in-out";
-        }
-        
-    }
-
-        
 
         generateDots();
 
         document.addEventListener('click', () => {
+            playMusic();
             clickCount++;
             if (clickCount === 1) {
                 createTextShape();
@@ -201,14 +199,15 @@
             }
         });
 
-        //document.addEventListener('click', createHeartShape);
-
         window.addEventListener('resize', () => {
             document.body.innerHTML = '';
             dots.length = 0;
             density = window.innerWidth < 600 ? 500 : 1200;
             generateDots();
         });
+
+        // Coba autoplay saat halaman dimuat (beberapa browser memblokir ini)
+        window.addEventListener("load", playMusic);
     </script>
 </body>
 </html>
