@@ -152,7 +152,11 @@
             }
         }
 
+        let flamesDone = false;
+
         function createHeartShape() {
+
+            if (!flamesDone) return;
 
             removeCandles();
 
@@ -183,6 +187,7 @@
             detectSpamClicks();
         }
 
+        
         function createTextShape() {
             const canvas = document.getElementById('textCanvas');
             const ctx = canvas.getContext('2d');
@@ -278,7 +283,11 @@
                         flame.style.top = `${textTopY - 34}px`;
 
                         body.appendChild(flame);
-                        flame.style.animation = "flameGrow 1s ease-out forwards"; // Api menyala bertahap
+                        flame.style.animation = "flameGrow 1s ease-out forwards";
+                            setTimeout(() => {
+                                flame.style.animation = "flicker 0.2s infinite alternate ease-in-out";
+                                flamesDone = true; 
+                            }, 1000); // Mulai berkedip setelah 1 detik (sesuai durasi flameGrow)
                     }, 700); // Nyala api sedikit lebih lambat dari lilin
                 });
             }, 1000); // Delay sebelum lilin muncul
