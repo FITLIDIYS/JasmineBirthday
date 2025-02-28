@@ -35,24 +35,25 @@
             }
         }
 
-        @keyframes moveInside {
-            0% {
-                transform: translate(0, 0);
-            }
-            50% {
-                transform: translate(var(--dx), var(--dy));
-            }
-            100% {
-                transform: translate(0, 0);
-            }
-        }
-
         .beating {
             animation: beat 1.5s infinite ease-in-out alternate;
         }
 
-        .moving {
-            animation: moveInside 3s infinite ease-in-out alternate;
+        /* Warning Text Style */
+        .warning-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 0, 0, 0.8);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            font-family: Arial, sans-serif;
+            font-size: 18px;
+            display: none;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
         }
     </style>
 </head>
@@ -62,15 +63,20 @@
 
     <canvas id="textCanvas" width="500" height="200" style="display:none;"></canvas>
 
+    <!-- Warning Text -->
+    <div id="warning" class="warning-text">Wahh kamu spam hatinya, sekarang tanggung jawab untuk sama-sama terus sama aku :)</div>
+
     <script>
         const dots = [];
         let density = window.innerWidth < 1000 ? 800 : 1200;
         const body = document.body;
         let clickCount = 0;
         const audio = document.getElementById("bg-music");
+        let heartClickCount = 0;
+        let lastClickTime = 0;
+        const warning = document.getElementById("warning");
 
         function playMusic() {
-            // Memulai lagu hanya jika belum dimainkan
             if (audio.paused) {
                 audio.play().catch(error => console.log("Autoplay blocked:", error));
             }
@@ -97,27 +103,15 @@
             const centerY = window.innerHeight / 2 - 50;
             const scaleFactor = window.innerWidth < 600 ? 10 : 18;
 
-            let usedPositions = new Set();
-            let minDistance = 10;
-
             dots.forEach((dot, i) => {
-                let x, y, posX, posY;
-                let maxAttempts = 20, attempt = 0;
+                let t = Math.random() * Math.PI * 2;
+                let r = Math.sqrt(Math.random()) * 16;
 
-                do {
-                    let t = Math.random() * Math.PI * 2;
-                    let r = Math.sqrt(Math.random()) * 16;
+                let x = 16 * Math.pow(Math.sin(t), 3) * (r / 16);
+                let y = -(13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t)) * (r / 16);
 
-                    x = 16 * Math.pow(Math.sin(t), 3) * (r / 16);
-                    y = -(13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t)) * (r / 16);
-
-                    posX = Math.round(centerX + x * scaleFactor);
-                    posY = Math.round(centerY + y * scaleFactor);
-
-                    attempt++;
-                } while (attempt < maxAttempts);
-
-                usedPositions.add([posX, posY]);
+                let posX = Math.round(centerX + x * scaleFactor);
+                let posY = Math.round(centerY + y * scaleFactor);
 
                 setTimeout(() => {
                     dot.style.left = `${posX}px`;
@@ -127,15 +121,9 @@
                 if (Math.random() < 0.3) {
                     dot.classList.add("beating");
                 }
-
-                if (Math.random() < 0.5) {
-                    let dx = (Math.random() - 0.5) * 8;
-                    let dy = (Math.random() - 0.5) * 8;
-                    dot.style.setProperty('--dx', `${dx}px`);
-                    dot.style.setProperty('--dy', `${dy}px`);
-                    dot.classList.add("moving");
-                }
             });
+
+            detectSpamClicks();
         }
 
         function createTextShape() {
@@ -187,6 +175,29 @@
             }
         }
 
+        function detectSpamClicks() {
+            let now = new Date().getTime();
+            heartClickCount++;
+
+            if (heartClickCount > 10 && (now - lastClickTime) < 2000) {
+                showWarning();
+                heartClickCount = 0; // Reset counter after warning
+            }
+            lastClickTime = now;
+        }
+
+        function showWarning() {
+            warning.style.display = "block";
+            warning.style.opacity = "1";
+
+            setTimeout(() => {
+                warning.style.opacity = "0";
+                setTimeout(() => {
+                    warning.style.display = "none";
+                }, 500);
+            }, 3000);
+        }
+
         generateDots();
 
         document.addEventListener('click', () => {
@@ -207,7 +218,6 @@
             generateDots();
         });
 
-        // Coba autoplay saat halaman dimuat (beberapa browser memblokir ini)
         window.addEventListener("load", playMusic);
     </script>
 </body>
